@@ -72,6 +72,7 @@ class LoginPage extends StatelessWidget {
                   child: AuthTextField(
                     hintText: 'example@example.com',
                     controller: emailCtrl,
+                    onChanged: (value) => controller.email.value = value,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -92,6 +93,7 @@ class LoginPage extends StatelessWidget {
                       controller: passCtrl,
                       obscure: controller.obscurePassword.value,
                       toggleObscure: controller.togglePassword,
+                      onChanged: (value) => controller.password.value = value,
                     ),
                   ),
                 ),
@@ -99,7 +101,16 @@ class LoginPage extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: Implement forgot password functionality
+                      Get.snackbar(
+                        'Info',
+                        'Forgot password feature coming soon',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: const Color(0xFF6C4AB6),
+                        colorText: Colors.white,
+                      );
+                    },
                     child: const Text(
                       "Forgot Password",
                       style: TextStyle(color: Color(0xFF6D95A4)),
@@ -108,15 +119,14 @@ class LoginPage extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.center,
-
-                  child: CustomButton(
+                  child: Obx(() => CustomButton(
                     width: 250,
                     height: 65,
-                    text: "Log In",
-                    onTap: () {
-                      controller.login();
+                    text: controller.isLoading.value ? "Logging In..." : "Log In",
+                    onTap: controller.isLoading.value ? null : () async {
+                      await controller.loginUser();
                     },
-                  ),
+                  )),
                 ),
                 const SizedBox(height: 20),
                 Align(
@@ -129,12 +139,30 @@ class LoginPage extends StatelessWidget {
                   children: [
                     SignInButton.mini(
                       buttonType: ButtonType.facebook,
-                      onPressed: () {},
+                      onPressed: () {
+                        // TODO: Implement Facebook login
+                        Get.snackbar(
+                          'Info',
+                          'Facebook login coming soon',
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: const Color(0xFF6C4AB6),
+                          colorText: Colors.white,
+                        );
+                      },
                     ),
                     const SizedBox(width: 20),
                     SignInButton.mini(
                       buttonType: ButtonType.google,
-                      onPressed: () {},
+                      onPressed: () {
+                        // TODO: Implement Google login
+                        Get.snackbar(
+                          'Info',
+                          'Google login coming soon',
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: const Color(0xFF6C4AB6),
+                          colorText: Colors.white,
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -144,7 +172,9 @@ class LoginPage extends StatelessWidget {
                   children: [
                     const Text("Don`t have an account?"),
                     TextButton(
-                      onPressed: () {controller.signup();},
+                      onPressed: () {
+                        controller.signup();
+                      },
                       child: const Text(
                         "Sign Up",
                         style: TextStyle(color: Color(0xFF6D95A4)),

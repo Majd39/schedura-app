@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'app/routes/app_pages.dart';
 import 'app/bindings/all_bindings.dart';
+import 'app/services/storage_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(ShedUraApp());
 }
 
@@ -16,6 +18,13 @@ class ShedUraApp extends StatelessWidget {
       initialBinding: AllBindings(),
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
+      onInit: () async {
+        // Check if user is already logged in
+        bool isLoggedIn = await StorageService.isLoggedIn();
+        if (isLoggedIn) {
+          Get.offAllNamed(Routes.HOME);
+        }
+      },
       theme: ThemeData(
         appBarTheme: AppBarTheme(
           backgroundColor: Color(0x016C4AB6),

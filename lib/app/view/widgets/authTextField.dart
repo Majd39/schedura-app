@@ -7,6 +7,7 @@ class AuthTextField extends StatelessWidget {
   final VoidCallback? toggleObscure;
   final double width;
   final double height;
+  final void Function(String)? onChanged;
   const AuthTextField({
     super.key,
     this.hintText = "",
@@ -15,6 +16,7 @@ class AuthTextField extends StatelessWidget {
     this.toggleObscure,
     this.width = 399,
     this.height = 55,
+    this.onChanged,
   });
 
   @override
@@ -27,6 +29,8 @@ class AuthTextField extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
       ),
       child: TextFormField(
+        onChanged: onChanged,
+
         controller: controller,
         obscureText: obscure,
         style: const TextStyle(color: Colors.white),

@@ -11,8 +11,9 @@ class OTPPage extends StatelessWidget {
   // Create 6 separate TextEditingControllers
   final List<TextEditingController> otpControllers = List.generate(
     6,
-        (index) => TextEditingController(),
+    (index) => TextEditingController(),
   );
+  
   OTPPage({super.key});
 
   @override
@@ -35,50 +36,65 @@ class OTPPage extends StatelessWidget {
                   ),
                   SizedBox(height: size.height * 0.05),
                   Text(
-                    "OTP",
+                    "OTP Verification",
                     style: GoogleFonts.montserrat(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    "Enter the 6-digit code we sent to john@doe.com",
+                  Obx(() => Text(
+                    "Enter the 6-digit verification code sent to ${controller.registrationEmail.value.isNotEmpty ? controller.registrationEmail.value : controller.email.value}",
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
-                  ),
+                  )),
                   const SizedBox(height: 32),
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 10,
                     children: List.generate(
                       6,
-                          (index) => AuthTextField(
+                      (index) => AuthTextField(
                         controller: otpControllers[index],
                         width: 50,
                         height: 50,
+                        onChanged: (value) {
+                          // Auto-focus to next field
+                          if (value.isNotEmpty && index < 5) {
+                            FocusScope.of(context).nextFocus();
+                          }
+                          // Combine all OTP digits
+                          _updateOtpCode();
+                        },
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: Implement resend OTP functionality
+                      Get.snackbar(
+                        'Info',
+                        'OTP resent to your email',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: const Color(0xFF6C4AB6),
+                        colorText: Colors.white,
+                      );
+                    },
                     child: const Text("Resend Code"),
                   ),
                   const SizedBox(height: 16),
-                  CustomButton(
+                  Obx(() => CustomButton(
                     width: 250,
                     height: 65,
-                    text: "Confirm",
-                    onTap: () {
-                      // You should validate OTP here
-                     // controller.verifyOTP;
-                      Get.toNamed(Routes.Main);
+                    text: controller.isLoading.value ? "Verifying..." : "Confirm",
+                    onTap: controller.isLoading.value ? null : () async {
+                      await controller.verifyOTP();
                     },
-                  ),
+                  )),
                 ],
               ),
             ),
@@ -86,5 +102,13 @@ class OTPPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _updateOtpCode() {
+    String otp = '';
+    for (int i = 0; i < otpControllers.length; i++) {
+      otp += otpControllers[i].text;
+    }
+    controller.otpCode.value = otp;
   }
 }

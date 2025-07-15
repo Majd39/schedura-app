@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../../controller/auth_controller.dart';
 import '../../routes/app_pages.dart';
 import '../widgets/authTextField.dart';
 import '../widgets/customButton.dart';
 import 'package:sign_button/sign_button.dart';
+
 class SignupPage extends StatelessWidget {
   final controller = Get.put(AuthController());
   final firstNameCtrl = TextEditingController();
@@ -13,8 +16,14 @@ class SignupPage extends StatelessWidget {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   final confirmPassCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
+  final dateOfBirthCtrl = TextEditingController();
+  final jobIdCtrl = TextEditingController();
+  final managerIdCtrl = TextEditingController();
+  final addressCtrl = TextEditingController();
 
   final RxString selectedGender = ''.obs;
+  final ImagePicker _picker = ImagePicker();
 
   SignupPage({super.key});
 
@@ -38,14 +47,91 @@ class SignupPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Profile Image Selection
+                _buildLabel("Profile Image"),
+                Center(
+                  child: Obx(() => GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(50),
+                        border: Border.all(color: const Color(0xFF6C4AB6), width: 2),
+                      ),
+                      child: controller.selectedImage.value != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: Image.file(
+                                controller.selectedImage.value!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.add_a_photo,
+                              size: 40,
+                              color: Color(0xFF6C4AB6),
+                            ),
+                    ),
+                  )),
+                ),
+
                 _buildLabel("First Name"),
-                AuthTextField(hintText: 'Majd', controller: firstNameCtrl),
+                AuthTextField(
+                  hintText: 'Majd',
+                  controller: firstNameCtrl,
+                  onChanged: (value) => controller.firstName.value = value,
+                ),
 
                 _buildLabel("Last Name"),
-                AuthTextField(hintText: 'Almansour', controller: lastNameCtrl),
+                AuthTextField(
+                  hintText: 'Almansour',
+                  controller: lastNameCtrl,
+                  onChanged: (value) => controller.lastName.value = value,
+                ),
 
                 _buildLabel("Email"),
-                AuthTextField(hintText: 'example@example.com', controller: emailCtrl),
+                AuthTextField(
+                  hintText: 'example@example.com',
+                  controller: emailCtrl,
+                  onChanged: (value) => controller.email.value = value,
+                ),
+
+                _buildLabel("Phone Number"),
+                AuthTextField(
+                  hintText: '+963923577159',
+                  controller: phoneCtrl,
+                  onChanged: (value) => controller.phoneNumber.value = value,
+                ),
+
+                _buildLabel("Date of Birth"),
+                AuthTextField(
+                  hintText: '1990-01-01',
+                  controller: dateOfBirthCtrl,
+                  onChanged: (value) => controller.dateOfBirth.value = value,
+                ),
+
+                _buildLabel("Job ID"),
+                AuthTextField(
+                  hintText: '2',
+                  controller: jobIdCtrl,
+                  onChanged: (value) => controller.jobId.value = value,
+                ),
+
+                _buildLabel("Manager ID"),
+                AuthTextField(
+                  hintText: '1',
+                  controller: managerIdCtrl,
+                  onChanged: (value) => controller.managerId.value = value,
+                ),
+
+                _buildLabel("Address"),
+                AuthTextField(
+                  hintText: 'Masyaf',
+                  controller: addressCtrl,
+                  onChanged: (value) => controller.address.value = value,
+                ),
 
                 _buildLabel("Password"),
                 Obx(() => AuthTextField(
@@ -53,19 +139,21 @@ class SignupPage extends StatelessWidget {
                   controller: passCtrl,
                   obscure: controller.obscurePassword.value,
                   toggleObscure: controller.togglePassword,
+                  onChanged: (value) => controller.password.value = value,
                 )),
 
                 _buildLabel("Confirm Password"),
                 Obx(() => AuthTextField(
                   hintText: '************',
                   controller: confirmPassCtrl,
-                  obscure: controller.obscurePassword.value,
-                  toggleObscure: controller.togglePassword,
+                  obscure: controller.obscureConfirmPassword.value,
+                  toggleObscure: controller.toggleConfirmPassword,
+                  onChanged: (value) => controller.confirmPassword.value = value,
                 )),
 
                 _buildLabel("Gender"),
                 Obx(
-                      () => DropdownButtonFormField<String>(
+                  () => DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -105,14 +193,14 @@ class SignupPage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 Center(
-                  child: CustomButton(
+                  child: Obx(() => CustomButton(
                     width: size.width * 0.7,
                     height: 60,
-                    text: "Sign Up",
-                    onTap: () {
-controller.signup();
+                    text: controller.isLoading.value ? "Signing Up..." : "Sign Up",
+                    onTap: controller.isLoading.value ? null : () async {
+                      await controller.register();
                     },
-                  ),
+                  )),
                 ),
 
                 const SizedBox(height: 20),
@@ -168,5 +256,22 @@ controller.signup();
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        controller.selectedImage.value = File(image.path);
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to pick image: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 }
